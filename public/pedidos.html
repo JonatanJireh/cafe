@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Pedidos guardados</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Lista de Pedidos</h1>
+  <div id="listaPedidos"></div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const listaPedidos = document.getElementById("listaPedidos");
+
+      // Obtener pedidos del backend
+      async function obtenerPedidos() {
+        try {
+          const res = await fetch('/api/pedidos');
+          if (!res.ok) throw new Error('Error al obtener pedidos');
+          const pedidos = await res.json();
+          return pedidos;
+        } catch (error) {
+          console.error(error);
+          alert('No se pudo cargar la lista de pedidos.');
+          return [];
+        }
+      }
+
+      // Eliminar pedido por id
+      async function eliminarPedido(id) {
+        try {
+          const res = await fetch(`/api/pedidos/${id}`, { method: 'DELETE' });
+          return res.ok;
+        } catch {
+          return false;
+        }
+      }
+
+      // Marcar pedido como atendido (PATCH)
+      async function marcarAtendido(id) {
+        try {
+          const res = await fetch(`/api/pedidos/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ atendido: true })
+          });
+          return res.ok;
+        } catch {
+          return false;
+        }
+      }
+
+      // Renderizar lista de pedidos
+      async function renderPedidos() {
+        const pedidos = await obtenerPedidos();
+        listaPedidos.innerHTML = "";
+
+        pedidos.forEach(pedido => {
+          if (pedido.atendido) return; // ⛔ No mostrar pedidos atendidos
+
+          const div = document.createElement("div");
+          div.className = "pedido-card";
+
+          const encabezado = document.createElement("h3");
+          encabezado.textContent = `Mesa ${pedido.mesa} - Atendido por ${pedido.mesero}`;
+          div.appendChild(encabezado);
+
+          const fecha = document.createElement("p");
+          fecha.textContent = `Fecha: ${new Date(pedido.createdAt || pedido.fecha || Date.now()).toLocaleString()}`;
+          div.appendChild(fecha);
+
+          const lista = document.createElement("ul");
+          console.log(pedido.productos);
+          pedido.productos.forEach(p => {
+          const li = document.createElement("li");
+          li.textContent = `${p.cantidad} x ${p.producto} - $${p.precio.toFixed(2)} = $${(p.cantidad * p.precio).toFixed(2)}`;
+          lista.appendChild(li);
+          });
+
+          div.appendChild(lista);
+
+          const total = document.createElement("p");
+          total.textContent = `Total: $${pedido.total.toFixed(2)}`;
+          div.appendChild(total);
+
+          // Botón: Marcar como atendido
+          const btnAtendido = document.createElement("button");
+          btnAtendido.textContent = "Marcar como atendido";
+          btnAtendido.className = "btn-atendido";
+          btnAtendido.addEventListener("click", async () => {
+            if (confirm("¿Marcar este pedido como atendido?")) {
+              const success = await marcarAtendido(pedido._id);
+              if (success) {
+                alert("Pedido marcado como atendido");
+                div.remove(); // Eliminar del DOM al marcar como atendido
+              } else {
+                alert("Error al actualizar pedido");
+              }
+            }
+          });
+          div.appendChild(btnAtendido);
+
+          // Botón: Eliminar pedido
+          const btnEliminar = document.createElement("button");
+          btnEliminar.textContent = "Eliminar";
+          btnEliminar.className = "btn-eliminar";
+          btnEliminar.addEventListener("click", async () => {
+            if (confirm("¿Eliminar este pedido?")) {
+              const success = await eliminarPedido(pedido._id);
+              if (success) {
+                alert("Pedido eliminado");
+                renderPedidos(); // Recargar lista
+              } else {
+                alert("Error al eliminar pedido");
+              }
+            }
+          });
+          div.appendChild(btnEliminar);
+
+          listaPedidos.appendChild(div);
+        });
+      }
+
+      renderPedidos();
+    });
+  </script>
+</body>
+</html>

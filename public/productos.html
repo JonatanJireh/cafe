@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Productos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Agregar Productos</h1>
+
+  <label>Nombre del producto:
+    <input type="text" id="nombreProducto" placeholder="Ej: Café con leche">
+  </label>
+
+  <label>Precio:
+    <input type="number" id="precioProducto" placeholder="Ej: 3.50" step="0.01">
+  </label>
+
+  <button id="agregarProducto">Agregar Producto</button>
+
+  <h2>Productos Guardados</h2>
+  <ul id="listaProductos"></ul>
+
+  <script>
+    const inputNombre = document.getElementById("nombreProducto");
+    const inputPrecio = document.getElementById("precioProducto");
+    const btnAgregar = document.getElementById("agregarProducto");
+    const lista = document.getElementById("listaProductos");
+
+    async function cargarProductos() {
+      lista.innerHTML = "";
+      try {
+        const res = await fetch("/api/productos");
+        const productos = await res.json();
+
+        productos.forEach((p) => {
+          const li = document.createElement("li");
+          li.innerHTML = `
+            ${p.nombre} - $${p.precio.toFixed(2)}
+            <button onclick="eliminarProducto('${p._id}')" class="btn-quitar">Eliminar</button>
+          `;
+          lista.appendChild(li);
+        });
+      } catch (err) {
+        console.error("Error al cargar productos:", err);
+        alert("No se pudo cargar la lista de productos.");
+      }
+    }
+
+    async function eliminarProducto(id) {
+      try {
+        const res = await fetch(`/api/productos/${id}`, {
+          method: "DELETE"
+        });
+        if (res.ok) {
+          cargarProductos();
+        } else {
+          alert("No se pudo eliminar el producto.");
+        }
+      } catch (err) {
+        console.error("Error al eliminar producto:", err);
+      }
+    }
+
+    btnAgregar.addEventListener("click", async () => {
+      const nombre = inputNombre.value.trim();
+      const precio = parseFloat(inputPrecio.value);
+
+      if (!nombre || isNaN(precio)) {
+        alert("Ingresa nombre y precio válidos.");
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/productos", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ nombre, precio })
+        });
+
+        if (res.ok) {
+          inputNombre.value = "";
+          inputPrecio.value = "";
+          cargarProductos();
+        } else {
+          alert("Error al guardar producto.");
+        }
+      } catch (err) {
+        console.error("Error al agregar producto:", err);
+      }
+    });
+
+    cargarProductos();
+  </script>
+</body>
+</html>

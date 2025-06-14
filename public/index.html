@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Nuevo Pedido</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Solo para autocompletar dropdown básico */
+    .autocomplete-list {
+      border: 1px solid #ccc;
+      max-height: 100px;
+      overflow-y: auto;
+      position: absolute;
+      background: white;
+      width: 200px;
+      z-index: 1000;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+    .autocomplete-list li {
+      padding: 5px;
+      cursor: pointer;
+    }
+    .autocomplete-list li:hover {
+      background-color: #ddd;
+    }
+    label {
+      display: block;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Nuevo Pedido</h1>
+
+  <label>Mesero:
+    <input type="text" id="mesero" name="mesero" placeholder="Escribe el nombre del mesero" autocomplete="off" />
+    <ul id="listaMeseros" class="autocomplete-list" style="display:none;"></ul>
+  </label>
+
+  <label>Mesa:
+    <input type="text" id="mesa" placeholder="Número de mesa" />
+  </label>
+
+  <hr />
+
+  <h2>Agregar Producto</h2>
+
+  <label>Producto:
+    <input type="text" id="producto" name="producto" placeholder="Escribe para buscar" autocomplete="off" />
+    <ul id="listaProductos" class="autocomplete-list" style="display:none;"></ul>
+  </label>
+
+  <label>Precio:
+    <input type="number" id="precio" placeholder="Precio" step="0.01" readonly />
+  </label>
+
+  <label>Cantidad:
+    <input type="number" id="cantidad" placeholder="Cantidad" min="1" value="1" />
+  </label>
+
+  <button id="agregarProducto">Agregar</button>
+
+  <hr />
+
+  <h2>Productos en el Pedido</h2>
+  <ul id="listaPedido"></ul>
+  <p id="total">Total: $0.00</p>
+
+  <button id="guardarPedido">Guardar Pedido</button>
+
+  <script>
+    // Variables y referencias
+    const meseroInput = document.getElementById("mesero");
+    const listaMeseros = document.getElementById("listaMeseros");
+    const mesaInput = document.getElementById("mesa");
+
+    const productoInput = document.getElementById("producto");
+    const listaProductos = document.getElementById("listaProductos");
+    const precioInput = document.getElementById("precio");
+    const cantidadInput = document.getElementById("cantidad");
+    const agregarProductoBtn = document.getElementById("agregarProducto");
+
+    const listaPedido = document.getElementById("listaPedido");
+    const totalP = document.getElementById("total");
+    const guardarPedidoBtn = document.getElementById("guardarPedido");
+
+    // Datos cargados desde backend
+    let meseros = [];
+    let productos = [];
+
+    // Pedido actual
+    let pedido = [];
+
+    // --- Función para cargar meseros ---
+    async function cargarMeseros() {
+      try {
+        const res = await fetch("/api/meseros");
+        meseros = await res.json();
+      } catch (err) {
+        alert("Error cargando meseros");
+      }
+    }
+
+    // --- Función para cargar productos ---
+    async function cargarProductos() {
+      try {
+        const res = await fetch("/api/productos");
+        productos = await res.json();
+      } catch (err) {
+        alert("Error cargando productos");
+      }
+    }
+
+    // --- Mostrar sugerencias autocompletar ---
+    function mostrarSugerencias(input, lista, items, key = "nombre") {
+      const valor = input.value.toLowerCase();
+      lista.innerHTML = "";
+      if (!valor) {
+        lista.style.display = "none";
+        return;
+      }
+      const sugerencias = items.filter(i => i[key].toLowerCase().includes(valor));
+      if (sugerencias.length === 0) {
+        lista.style.display = "none";
+        return;
+      }
+      sugerencias.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item[key];
+        li.addEventListener("click", () => {
+          input.value = item[key];
+          lista.style.display = "none";
+          if (input === productoInput) {
+            precioInput.value = item.precio.toFixed(2);
+          }
+        });
+        lista.appendChild(li);
+      });
+      lista.style.display = "block";
+    }
+
+    // --- Agregar producto al pedido ---
+    function agregarProductoAlPedido() {
+      const nombre = productoInput.value.trim();
+      const precio = parseFloat(precioInput.value);
+      const cantidad = parseInt(cantidadInput.value);
+
+      if (!nombre || isNaN(precio) || isNaN(cantidad) || cantidad <= 0) {
+        alert("Completa correctamente los datos del producto");
+        return;
+      }
+
+      // Verificar si el producto ya está en el pedido
+      const existente = pedido.find(p => p.producto === nombre);
+      if (existente) {
+      existente.cantidad += cantidad;
+      } else {
+     pedido.push({ producto: nombre, precio, cantidad });
+      }
+
+
+      productoInput.value = "";
+      precioInput.value = "";
+      cantidadInput.value = 1;
+
+      actualizarListaPedido();
+    }
+
+    // --- Actualizar lista y total ---
+    function actualizarListaPedido() {
+      listaPedido.innerHTML = "";
+      let total = 0;
+      pedido.forEach(({ producto, precio, cantidad }, i) => {
+      const li = document.createElement("li");
+      li.innerHTML = `${producto} - $${precio.toFixed(2)} x ${cantidad} = $${(precio * cantidad).toFixed(2)} <button onclick="quitarProducto(${i})">Eliminar</button>`;
+      total += precio * cantidad;
+     listaPedido.appendChild(li);
+});
+
+      totalP.textContent = `Total: $${total.toFixed(2)}`;
+    }
+
+    // --- Quitar producto ---
+    function quitarProducto(index) {
+      pedido.splice(index, 1);
+      actualizarListaPedido();
+    }
+
+    // --- Guardar pedido en backend ---
+    async function guardarPedido() {
+      const mesero = meseroInput.value.trim();
+      const mesa = mesaInput.value.trim();
+
+      if (!mesero || !mesa) {
+        alert("Ingresa mesero y número de mesa");
+        return;
+      }
+      if (pedido.length === 0) {
+        alert("Agrega al menos un producto al pedido");
+        return;
+      }
+
+      // Crear objeto para enviar
+      console.log(pedido);
+      const pedidoData = {
+      mesero,
+      mesa,
+      productos: pedido.map(p => ({
+     producto: p.producto,   // Aquí cambias 'nombre' a 'producto'
+      precio: p.precio,
+      cantidad: p.cantidad,
+      subtotal: p.precio * p.cantidad  // Agrega el subtotal también para guardar bien
+      })),
+
+  total: pedido.reduce((acc, p) => acc + p.precio * p.cantidad, 0)
+};
+
+
+      try {
+        const res = await fetch("/api/pedidos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(pedidoData)
+        });
+        if (res.ok) {
+          alert("Pedido guardado correctamente");
+          // Limpiar formulario
+          meseroInput.value = "";
+          mesaInput.value = "";
+          pedido = [];
+          actualizarListaPedido();
+        } else {
+          alert("Error al guardar el pedido");
+        }
+      } catch (err) {
+        alert("Error al guardar el pedido");
+      }
+    }
+
+    // Eventos
+    meseroInput.addEventListener("input", () => mostrarSugerencias(meseroInput, listaMeseros, meseros, "nombre"));
+    productoInput.addEventListener("input", () => mostrarSugerencias(productoInput, listaProductos, productos, "nombre"));
+    agregarProductoBtn.addEventListener("click", agregarProductoAlPedido);
+    guardarPedidoBtn.addEventListener("click", guardarPedido);
+
+    // Hacer quitarProducto global para botones en li (ya que se usa en inline onclick)
+    window.quitarProducto = quitarProducto;
+
+    // Cargar datos iniciales
+    cargarMeseros();
+    cargarProductos();
+  </script>
+</body>
+</html>
