@@ -8,6 +8,7 @@
 <body>
   <h1>Lista de Pedidos</h1>
   <div id="listaPedidos"></div>
+  <button id="btnMenu">Menú</button>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
@@ -124,6 +125,11 @@
 
       renderPedidos();
     });
+    // Botón para ir al menú
+document.getElementById("btnMenu").addEventListener("click", () => {
+  location.href = "menu.html";
+});
+
   </script>
 </body>
 </html>

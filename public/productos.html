@@ -8,6 +8,7 @@
 </head>
 <body>
   <h1>Agregar Productos</h1>
+  <button id="btnMenu">Menú</button>
 
   <label>Nombre del producto:
     <input type="text" id="nombreProducto" placeholder="Ej: Café con leche">
@@ -94,6 +95,11 @@
     });
 
     cargarProductos();
+    // Botón para ir al menú
+document.getElementById("btnMenu").addEventListener("click", () => {
+  location.href = "menu.html";
+});
+
   </script>
 </body>
 </html>

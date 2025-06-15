@@ -34,6 +34,8 @@
 <body>
   <h1>Nuevo Pedido</h1>
 
+  <button id="btnMenu">Menú</button>
+
   <label>Mesero:
     <input type="text" id="mesero" name="mesero" placeholder="Escribe el nombre del mesero" autocomplete="off" />
     <ul id="listaMeseros" class="autocomplete-list" style="display:none;"></ul>
@@ -251,6 +253,11 @@
     // Cargar datos iniciales
     cargarMeseros();
     cargarProductos();
+    // Botón para ir al menú
+document.getElementById("btnMenu").addEventListener("click", () => {
+  location.href = "menu.html";
+});
+
   </script>
 </body>
 </html>

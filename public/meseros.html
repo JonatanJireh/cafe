@@ -8,6 +8,7 @@
 </head>
 <body>
   <h1>Agregar Meseros</h1>
+<button id="btnMenu">Menú</button>
 
   <label>Nombre del mesero:
     <input type="text" id="nombreMesero" placeholder="Ej: Juan Pérez">
@@ -86,6 +87,11 @@
     });
 
     cargarMeseros();
+    // Botón para ir al menú
+document.getElementById("btnMenu").addEventListener("click", () => {
+  location.href = "menu.html";
+});
+
   </script>
 </body>
 </html>
