@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!nombre || isNaN(cantidad) || isNaN(precio)) return alert("Completa todos los campos del producto.");
 
     const subtotal = cantidad * precio;
-    pedido.push({ producto: nombre, cantidad, precio, subtotal });
+
 
     inputProducto.value = "";
     inputPrecio.value = "";

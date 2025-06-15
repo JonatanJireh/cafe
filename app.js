@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Servir archivos estáticos del frontend (HTML, CSS, JS)
+// Servir archivos estáticos del frontend
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Rutas API
@@ -25,8 +25,8 @@ app.use('/api/pedidos', pedidoRoutes);
 app.use('/api/productos', productoRoutes);
 app.use('/api/meseros', meseroRoutes);
 
-// Conexión a MongoDB y arrancar servidor
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+// Conexión a MongoDB y arranque
+mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB conectado correctamente");
     app.listen(PORT, () => {
