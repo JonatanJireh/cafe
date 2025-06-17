@@ -38,7 +38,7 @@
         productos.forEach((p) => {
           const li = document.createElement("li");
           li.innerHTML = `
-            ${p.nombre} - $${p.precio.toFixed(2)}
+            ${p.nombre} - Bs${p.precio.toFixed(2)}
             <button onclick="eliminarProducto('${p._id}')" class="btn-quitar">Eliminar</button>
           `;
           lista.appendChild(li);

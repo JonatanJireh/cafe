@@ -76,14 +76,14 @@
           console.log(pedido.productos);
           pedido.productos.forEach(p => {
           const li = document.createElement("li");
-          li.textContent = `${p.cantidad} x ${p.producto} - $${p.precio.toFixed(2)} = $${(p.cantidad * p.precio).toFixed(2)}`;
+          li.textContent = `${p.cantidad} x ${p.producto} - Bs ${p.precio.toFixed(2)} = Bs ${(p.cantidad * p.precio).toFixed(2)}`;
           lista.appendChild(li);
           });
 
           div.appendChild(lista);
 
           const total = document.createElement("p");
-          total.textContent = `Total: $${pedido.total.toFixed(2)}`;
+          total.textContent = `Total: Bs ${pedido.total.toFixed(2)}`;
           div.appendChild(total);
 
           // Botón: Marcar como atendido

@@ -44,7 +44,7 @@
 
     <h2>Productos en el Pedido</h2>
     <ul id="listaPedido"></ul>
-    <p id="total">Total: $0.00</p>
+    <p id="total">Total: Bs 0.00</p>
 
     <button id="guardarPedido">Guardar Pedido</button>
   </div>
@@ -153,12 +153,12 @@
       let total = 0;
       pedido.forEach(({ producto, precio, cantidad }, i) => {
       const li = document.createElement("li");
-      li.innerHTML = `${producto} - $${precio.toFixed(2)} x ${cantidad} = $${(precio * cantidad).toFixed(2)} <button onclick="quitarProducto(${i})">Eliminar</button>`;
+      li.innerHTML = `${producto} - Bs ${precio.toFixed(2)} x ${cantidad} = Bs ${(precio * cantidad).toFixed(2)} <button onclick="quitarProducto(${i})">Eliminar</button>`;
       total += precio * cantidad;
      listaPedido.appendChild(li);
 });
 
-      totalP.textContent = `Total: $${total.toFixed(2)}`;
+      totalP.textContent = `Total: Bs${total.toFixed(2)}`;
     }
 
     // --- Quitar producto ---

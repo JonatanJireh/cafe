@@ -44,13 +44,13 @@
           const listaProductos = document.createElement("ul");
           pedido.productos.forEach(p => {
             const li = document.createElement("li");
-            li.textContent = `${p.cantidad} x ${p.producto || p.nombre} - $${p.precio.toFixed(2)} = $${(p.subtotal || p.cantidad * p.precio).toFixed(2)}`;
+            li.textContent = `${p.cantidad} x ${p.producto || p.nombre} - Bs ${p.precio.toFixed(2)} = Bs ${(p.subtotal || p.cantidad * p.precio).toFixed(2)}`;
             listaProductos.appendChild(li);
           });
           div.appendChild(listaProductos);
 
           const total = document.createElement("p");
-          total.textContent = `Total: $${pedido.total.toFixed(2)}`;
+          total.textContent = `Total: Bs ${pedido.total.toFixed(2)}`;
           div.appendChild(total);
 
           lista.appendChild(div);
