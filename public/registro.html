@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registro de Ventas</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    #btnMenu {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <button id="btnMenu">Menú</button>
+  <h1>Registro de Productos Vendidos</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Cantidad Vendida</th>
+      </tr>
+    </thead>
+    <tbody id="tablaProductos"></tbody>
+  </table>
+
+  <script>
+    document.getElementById("btnMenu").addEventListener("click", () => {
+      location.href = "menu.html";
+    });
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const tabla = document.getElementById("tablaProductos");
+
+      async function obtenerPedidos() {
+        try {
+          const res = await fetch("/api/pedidos");
+          if (!res.ok) throw new Error("Error al obtener pedidos");
+          return await res.json();
+        } catch (error) {
+          console.error(error);
+          alert("Error al cargar pedidos.");
+          return [];
+        }
+      }
+
+      function contarProductos(pedidos) {
+        const conteo = {};
+
+        pedidos.forEach(pedido => {
+          if (!pedido.atendido) return; // Solo contar atendidos
+          pedido.productos.forEach(p => {
+            const nombre = p.producto || p.nombre;
+            if (!conteo[nombre]) {
+              conteo[nombre] = 0;
+            }
+            conteo[nombre] += p.cantidad;
+          });
+        });
+
+        return conteo;
+      }
+
+      function renderTabla(conteo) {
+        tabla.innerHTML = "";
+        Object.entries(conteo).forEach(([producto, cantidad]) => {
+          const fila = document.createElement("tr");
+          fila.innerHTML = `
+            <td>${producto}</td>
+            <td>${cantidad}</td>
+          `;
+          tabla.appendChild(fila);
+        });
+      }
+
+      const pedidos = await obtenerPedidos();
+      const conteo = contarProductos(pedidos);
+      renderTabla(conteo);
+    });
+  </script>
+</body>
+</html>

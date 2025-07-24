@@ -5,12 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pedidos Atendidos</title>
   <link rel="stylesheet" href="styles.css">
+  <!-- SheetJS para exportar Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
+  <button id="btnMenu">Menú</button>
+  <button id="btnExportar">Exportar a Excel</button>
   <h1>Pedidos Atendidos</h1>
   <div id="listaAtendidos"></div>
 
   <script>
+    let pedidosAtendidos = [];
+
     document.addEventListener("DOMContentLoaded", async () => {
       const lista = document.getElementById("listaAtendidos");
 
@@ -19,7 +25,7 @@
           const res = await fetch('/api/pedidos');
           if (!res.ok) throw new Error("Error al obtener pedidos");
           const todos = await res.json();
-          return todos.filter(p => p.atendido); // Filtrar solo los pedidos atendidos
+          return todos.filter(p => p.atendido); // Filtrar pedidos atendidos
         } catch (error) {
           console.error(error);
           alert("No se pudieron cargar los pedidos atendidos.");
@@ -57,9 +63,47 @@
         });
       }
 
-      const pedidosAtendidos = await obtenerAtendidos();
-      renderPedidos(pedidosAtendidos);
+pedidosAtendidos = await obtenerAtendidos();
+
+// Ordenar por fecha descendente (más reciente primero)
+pedidosAtendidos.sort((a, b) => new Date(b.fecha || b.createdAt) - new Date(a.fecha || a.createdAt));
+
+renderPedidos(pedidosAtendidos);
+
     });
+
+    document.getElementById("btnMenu").addEventListener("click", () => {
+      location.href = "menu.html";
+    });
+
+    document.getElementById("btnExportar").addEventListener("click", () => {
+      exportarExcel(pedidosAtendidos);
+    });
+
+    function exportarExcel(pedidos) {
+      const datos = [];
+
+      pedidos.forEach(p => {
+        p.productos.forEach(prod => {
+          datos.push({
+            Fecha: new Date(p.fecha || p.createdAt).toLocaleString(),
+            Mesa: p.mesa,
+            Mesero: p.mesero,
+            Producto: prod.producto || prod.nombre,
+            Cantidad: prod.cantidad,
+            Precio: prod.precio,
+            Subtotal: (prod.subtotal || prod.cantidad * prod.precio),
+            TotalPedido: p.total
+          });
+        });
+      });
+
+      const hoja = XLSX.utils.json_to_sheet(datos);
+      const libro = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(libro, hoja, "PedidosAtendidos");
+
+      XLSX.writeFile(libro, "pedidos_atendidos.xlsx");
+    }
   </script>
 </body>
 </html>

@@ -20,77 +20,81 @@
   <ul id="listaMeseros"></ul>
 
   <script>
-    const inputMesero = document.getElementById("nombreMesero");
-    const btnAgregar = document.getElementById("agregarMesero");
-    const lista = document.getElementById("listaMeseros");
+  const inputMesero = document.getElementById("nombreMesero");
+  const btnAgregar = document.getElementById("agregarMesero");
+  const lista = document.getElementById("listaMeseros");
 
-    async function cargarMeseros() {
-      lista.innerHTML = "";
-      try {
-        const res = await fetch("/api/meseros");
-        const meseros = await res.json();
+  async function cargarMeseros() {
+    lista.innerHTML = "";
+    try {
+      const res = await fetch("/api/meseros");
+      const meseros = await res.json();
 
-        meseros.forEach((m) => {
-          const li = document.createElement("li");
-          li.innerHTML = `
-            ${m.nombre} 
-            <button onclick="eliminarMesero('${m._id}')" class="btn-quitar">Eliminar</button>
-          `;
-          lista.appendChild(li);
-        });
-      } catch (err) {
-        console.error("Error al cargar meseros:", err);
-        alert("No se pudo cargar la lista de meseros.");
+      meseros.forEach((m) => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          ${m.nombre} 
+          <button onclick="eliminarMesero('${m._id}')" class="btn-quitar">Eliminar</button>
+        `;
+        lista.appendChild(li);
+      });
+    } catch (err) {
+      console.error("Error al cargar meseros:", err);
+      alert("No se pudo cargar la lista de meseros.");
+    }
+  }
+
+  async function eliminarMesero(id) {
+    try {
+      const res = await fetch(`/api/meseros/${id}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        cargarMeseros();
+      } else {
+        alert("No se pudo eliminar el mesero.");
       }
+    } catch (err) {
+      console.error("Error al eliminar mesero:", err);
+    }
+  }
+
+  // 👇 Esto hace visible la función desde el HTML
+  window.eliminarMesero = eliminarMesero;
+
+  btnAgregar.addEventListener("click", async () => {
+    const nombre = inputMesero.value.trim();
+    if (!nombre) {
+      alert("Ingresa un nombre.");
+      return;
     }
 
-    async function eliminarMesero(id) {
-      try {
-        const res = await fetch(`/api/meseros/${id}`, {
-          method: "DELETE"
-        });
-        if (res.ok) {
-          cargarMeseros();
-        } else {
-          alert("No se pudo eliminar el mesero.");
-        }
-      } catch (err) {
-        console.error("Error al eliminar mesero:", err);
+    try {
+      const res = await fetch("/api/meseros", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ nombre })
+      });
+
+      if (res.ok) {
+        inputMesero.value = "";
+        cargarMeseros();
+      } else {
+        alert("Error al guardar mesero.");
       }
+    } catch (err) {
+      console.error("Error al agregar mesero:", err);
     }
+  });
 
-    btnAgregar.addEventListener("click", async () => {
-      const nombre = inputMesero.value.trim();
-      if (!nombre) {
-        alert("Ingresa un nombre.");
-        return;
-      }
+  cargarMeseros();
 
-      try {
-        const res = await fetch("/api/meseros", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ nombre })
-        });
-
-        if (res.ok) {
-          inputMesero.value = "";
-          cargarMeseros();
-        } else {
-          alert("Error al guardar mesero.");
-        }
-      } catch (err) {
-        console.error("Error al agregar mesero:", err);
-      }
-    });
-
-    cargarMeseros();
-    // Botón para ir al menú
-document.getElementById("btnMenu").addEventListener("click", () => {
-  location.href = "menu.html";
-});
+  document.getElementById("btnMenu").addEventListener("click", () => {
+    location.href = "menu.html";
+  });
+</script>
 
   </script>
 </body>
