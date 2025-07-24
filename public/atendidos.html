@@ -39,6 +39,11 @@
           const div = document.createElement("div");
           div.className = "pedido-card";
 
+          // 👉 Mostrar número de pedido
+          const numero = document.createElement("h2");
+          numero.textContent = `Pedido #${pedido.numeroPedido || 'Sin número'}`;
+          div.appendChild(numero);
+
           const encabezado = document.createElement("h3");
           encabezado.textContent = `Mesa ${pedido.mesa} - Atendido por ${pedido.mesero}`;
           div.appendChild(encabezado);
@@ -63,13 +68,11 @@
         });
       }
 
-pedidosAtendidos = await obtenerAtendidos();
+      pedidosAtendidos = await obtenerAtendidos();
 
-// Ordenar por fecha descendente (más reciente primero)
-pedidosAtendidos.sort((a, b) => new Date(b.fecha || b.createdAt) - new Date(a.fecha || a.createdAt));
+      pedidosAtendidos.sort((a, b) => new Date(b.fecha || b.createdAt) - new Date(a.fecha || a.createdAt));
 
-renderPedidos(pedidosAtendidos);
-
+      renderPedidos(pedidosAtendidos);
     });
 
     document.getElementById("btnMenu").addEventListener("click", () => {
@@ -86,6 +89,7 @@ renderPedidos(pedidosAtendidos);
       pedidos.forEach(p => {
         p.productos.forEach(prod => {
           datos.push({
+            NumeroPedido: p.numeroPedido || 'Sin número',
             Fecha: new Date(p.fecha || p.createdAt).toLocaleString(),
             Mesa: p.mesa,
             Mesero: p.mesero,

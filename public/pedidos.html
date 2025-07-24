@@ -15,7 +15,6 @@
     document.addEventListener("DOMContentLoaded", () => {
       const listaPedidos = document.getElementById("listaPedidos");
 
-      // Obtener pedidos del backend
       async function obtenerPedidos() {
         try {
           const res = await fetch('/api/pedidos');
@@ -29,7 +28,6 @@
         }
       }
 
-      // Eliminar pedido por id
       async function eliminarPedido(id) {
         try {
           const res = await fetch(`/api/pedidos/${id}`, { method: 'DELETE' });
@@ -39,7 +37,6 @@
         }
       }
 
-      // Marcar pedido como atendido (PATCH)
       async function marcarAtendido(id) {
         try {
           const res = await fetch(`/api/pedidos/${id}`, {
@@ -53,16 +50,20 @@
         }
       }
 
-      // Renderizar lista de pedidos
       async function renderPedidos() {
         const pedidos = await obtenerPedidos();
         listaPedidos.innerHTML = "";
 
         pedidos.forEach(pedido => {
-          if (pedido.atendido) return; // ⛔ No mostrar pedidos atendidos
+          if (pedido.atendido) return;
 
           const div = document.createElement("div");
           div.className = "pedido-card";
+
+          // 👉 MOSTRAR número de pedido
+          const encabezadoNumero = document.createElement("h2");
+          encabezadoNumero.textContent = `Pedido N°${pedido.numeroPedido || "N/A"}`;
+          div.appendChild(encabezadoNumero);
 
           const encabezado = document.createElement("h3");
           encabezado.textContent = `Mesa ${pedido.mesa} - Atendido por ${pedido.mesero}`;
@@ -73,11 +74,10 @@
           div.appendChild(fecha);
 
           const lista = document.createElement("ul");
-          console.log(pedido.productos);
           pedido.productos.forEach(p => {
-          const li = document.createElement("li");
-          li.textContent = `${p.cantidad} x ${p.producto} - Bs ${p.precio.toFixed(2)} = Bs ${(p.cantidad * p.precio).toFixed(2)}`;
-          lista.appendChild(li);
+            const li = document.createElement("li");
+            li.textContent = `${p.cantidad} x ${p.producto} - Bs ${p.precio.toFixed(2)} = Bs ${(p.cantidad * p.precio).toFixed(2)}`;
+            lista.appendChild(li);
           });
 
           div.appendChild(lista);
@@ -86,7 +86,6 @@
           total.textContent = `Total: Bs ${pedido.total.toFixed(2)}`;
           div.appendChild(total);
 
-          // Botón: Marcar como atendido
           const btnAtendido = document.createElement("button");
           btnAtendido.textContent = "Marcar como atendido";
           btnAtendido.className = "btn-atendido";
@@ -95,7 +94,7 @@
               const success = await marcarAtendido(pedido._id);
               if (success) {
                 alert("Pedido marcado como atendido");
-                div.remove(); // Eliminar del DOM al marcar como atendido
+                div.remove();
               } else {
                 alert("Error al actualizar pedido");
               }
@@ -103,7 +102,6 @@
           });
           div.appendChild(btnAtendido);
 
-          // Botón: Eliminar pedido
           const btnEliminar = document.createElement("button");
           btnEliminar.textContent = "Eliminar";
           btnEliminar.className = "btn-eliminar";
@@ -112,7 +110,7 @@
               const success = await eliminarPedido(pedido._id);
               if (success) {
                 alert("Pedido eliminado");
-                renderPedidos(); // Recargar lista
+                renderPedidos();
               } else {
                 alert("Error al eliminar pedido");
               }
@@ -126,11 +124,10 @@
 
       renderPedidos();
     });
-    // Botón para ir al menú
-document.getElementById("btnMenu").addEventListener("click", () => {
-  location.href = "menu.html";
-});
 
+    document.getElementById("btnMenu").addEventListener("click", () => {
+      location.href = "menu.html";
+    });
   </script>
 </body>
 </html>

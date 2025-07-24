@@ -9,11 +9,30 @@ router.get('/', async (req, res) => {
 });
 
 // Crear pedido
+// Obtener el siguiente número correlativo
+async function obtenerProximoNumeroPedido() {
+  const ultimo = await Pedido.findOne().sort({ numeroPedido: -1 });
+  return ultimo ? ultimo.numeroPedido + 1 : 1;
+}
+
+// Crear pedido
 router.post('/', async (req, res) => {
-  const nuevo = new Pedido(req.body);
-  await nuevo.save();
-  res.json(nuevo);
+  try {
+    const numeroPedido = await obtenerProximoNumeroPedido();
+
+    const nuevo = new Pedido({
+      ...req.body,
+      numeroPedido  // ← Añadir número correlativo
+    });
+
+    await nuevo.save();
+    res.json(nuevo);
+  } catch (error) {
+    console.error('Error al crear pedido:', error);
+    res.status(500).json({ mensaje: 'Error al crear el pedido', error });
+  }
 });
+
 
 // Eliminar pedido
 router.delete('/:id', async (req, res) => {
